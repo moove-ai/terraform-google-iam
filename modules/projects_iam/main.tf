@@ -24,6 +24,12 @@ module "helper" {
   entities = var.projects
 }
 
+resource "null_resource" "module_depends_on" {
+  triggers = {
+    value = length(var.module_depends_on)
+  }
+}
+
 /******************************************
   Project IAM binding authoritative
  *****************************************/
@@ -33,6 +39,8 @@ resource "google_project_iam_binding" "project_iam_authoritative" {
   project  = module.helper.bindings_authoritative[each.key].name
   role     = module.helper.bindings_authoritative[each.key].role
   members  = module.helper.bindings_authoritative[each.key].members
+
+  depends_on = [null_resource.module_depends_on]
 }
 
 /******************************************
@@ -44,4 +52,8 @@ resource "google_project_iam_member" "project_iam_additive" {
   project  = module.helper.bindings_additive[each.key].name
   role     = module.helper.bindings_additive[each.key].role
   member   = module.helper.bindings_additive[each.key].member
+
+  depends_on = [null_resource.module_depends_on]
 }
+    
+    
